@@ -25,7 +25,7 @@
 | [04 — Claude Code SDK](04-claude-code-sdk.md) | SDK vs API、query() 用法、maxTurns、模型选择 |
 | [05 — 踩坑记录](05-pitfalls.md) | 7 个实战踩坑及修复过程 |
 | [06 — 使用指南](06-usage-guide.md) | 从零到跑通的完整步骤 |
-| [07 — OpenClaw 源码分析](07-openclaw-analysis.md) | 如何从 npm 包逆向学习协议 |
+| [07 — OpenClaw 源码分析](07-openclaw-analysis.md) | 33个源文件深度解析、时序图、架构图、协议类型体系、CDN加密方案 |
 | [08 — 权限模式](08-permission-modes.md) | auto 模式详解、6 种模式对比、安全策略 |
 
 ## 技术栈
