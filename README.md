@@ -46,7 +46,7 @@ https://github.com/farion1231/cc-switch
 ## 安装
 
 ```bash
-git clone https://github.com/crazynomad/weixin-claude-bot.git
+git clone https://github.com/Pla-Yer/weixin-claude-bot.git
 cd weixin-claude-bot
 npm install
 ```
