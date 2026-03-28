@@ -215,6 +215,7 @@ async function main() {
     systemPrompt: config.systemPrompt,
     cwd: config.cwd,
     permissionMode: config.permissionMode,
+    timeoutMs: config.timeoutMs,
   };
 
   console.log("=== 微信 Claude Bot 已启动 ===");
@@ -225,6 +226,7 @@ async function main() {
   console.log(`最大轮次: ${config.maxTurns}`);
   console.log(`工作目录: ${config.cwd}`);
   console.log(`多轮对话: ${config.multiTurn ? "开启" : "关闭"}`);
+  console.log(`使用本地Claude配置: ${config.useLocalClaudeConfig ? "开启" : "关闭"}`);
   if (config.systemPrompt) console.log(`系统提示: ${config.systemPrompt.substring(0, 60)}...`);
   console.log("等待消息中...\n");
 

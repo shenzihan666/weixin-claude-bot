@@ -106,8 +106,26 @@ npm run config -- --cwd ~/Github/my-project
 # 设置最大 agentic 轮次
 npm run config -- --max-turns 20
 
+# 设置单次对话超时保护时间（ms)
+npm run config -- --timeout 1800000
+
 # 设置系统提示
 npm run config -- --system-prompt "用简洁的中文回复，不要使用 Markdown 格式"
+
+# 启用/禁用本地Claude配置自动加载（默认开启）
+npm run config -- --use-local-claude-config true
+npm run config -- --use-local-claude-config false
+
+# 第三方模型提供商支持（DeepSeek、OpenRouter等）：
+# 方式1：通过本地配置文件（推荐，无需手动设置环境变量）
+# 在 ~/.claude/config.json 中添加：
+# {"ANTHROPIC_BASE_URL": "https://api.deepseek.com/anthropic", "ANTHROPIC_MODEL": "DeepSeek-V3.2"}
+# 然后运行：npm run config -- --model DeepSeek-V3.2
+#
+# 方式2：通过环境变量（传统方式）
+# export ANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic
+# export ANTHROPIC_MODEL=DeepSeek-V3.2
+# npm run config -- --model DeepSeek-V3.2
 ```
 
 配置保存在 `~/.weixin-claude-bot/config.json`。
@@ -178,12 +196,33 @@ weixin-claude-bot/
 - **iLink 协议是实验性的** — 腾讯未正式公开文档，API 可能随时变更，不建议用于生产环境
 - **权限模式** — 默认使用 `auto` 模式，后台分类器会检查危险操作（需 Team plan + Sonnet/Opus 4.6）。不满足条件时可切换到 `bypassPermissions`，但需注意安全
 - **Token 会过期** — 出现 session 过期提示时重新运行 `npm run login`
+- **超时保护** — Bot 内置 5 分钟默认超时保护，防止 Claude Code 进程卡死。可通过 `--timeout` 参数调整
+- **第三方模型支持** — 支持 DeepSeek、OpenRouter 等第三方模型提供商，可通过本地 Claude 配置文件自动加载环境变量，无需手动设置
 
 ## 背景
 
 本项目基于对 `@tencent-weixin/openclaw-weixin` npm 包（MIT License）的源码分析构建。该包实现了 iLink Bot 协议，让第三方开发者能通过标准 HTTP 与微信交互。
 
 详细的协议分析和构建过程记录在 [docs/](docs/00-overview.md) 目录中。
+
+## 项目对比
+
+本项目是从 `@tencent-weixin/openclaw-weixin` (3756行) 精简重构的教学版本，保留了iLink协议的核心逻辑，删除了80%的非必要代码：
+
+| 对比维度 | 原项目 (`openclaw-weixin`) | 本项目 (`weixin-claude-bot`) |
+|---------|---------------------------|----------------------------|
+| **代码规模** | 33个文件，3756行 | 7个文件，550行 |
+| **架构** | OpenClaw框架插件 | 独立Node.js应用 |
+| **功能** | 完整iLink协议（CDN媒体、多账号、语音转码等） | 核心文本消息 + Claude Code桥接 |
+| **设计目标** | 生产环境完整功能 | 教学演示 + 最小可用产品 |
+| **学习曲线** | 高（需理解框架） | 低（直接阅读核心逻辑） |
+
+**精简设计理念**：
+- 🗑️ **直接删除不需要的功能**：CDN媒体、多账号管理、SILK语音转码等
+- 🔗 **保留关键协议细节**：`context_token`管理、`client_id`唯一性、`from_user_id`必须为空
+- 🎯 **专注核心目标**：微信消息 ↔ Claude Code 桥接，不做通用微信客户端
+
+详细的技术对比分析见 [docs/10-comparison-analysis.md](docs/10-comparison-analysis.md)。
 
 ## License
 

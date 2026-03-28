@@ -15,6 +15,7 @@ export type ClaudeResponse = {
 
 export type ClaudeOptions = Pick<Required<BotConfig>, "model" | "maxTurns" | "systemPrompt" | "cwd" | "permissionMode"> & {
   sessionId?: string;
+  timeoutMs?: number;
 };
 
 /**
@@ -27,6 +28,13 @@ export async function askClaude(prompt: string, opts: ClaudeOptions): Promise<Cl
   let costUsd: number | undefined;
   let sessionId: string | undefined;
 
+  // Set up abort controller for timeout
+  const abortController = new AbortController();
+  const timeoutMs = opts.timeoutMs ?? 120_000; // default 2 minutes
+  const timeoutId = setTimeout(() => {
+    abortController.abort(new Error(`Claude Code 响应超时 (${timeoutMs}ms)`));
+  }, timeoutMs);
+
   const conversation = query({
     prompt,
     options: {
@@ -38,6 +46,7 @@ export async function askClaude(prompt: string, opts: ClaudeOptions): Promise<Cl
       permissionMode: opts.permissionMode as Options["permissionMode"],
       ...(opts.systemPrompt ? { appendSystemPrompt: opts.systemPrompt } : {}),
       ...(opts.sessionId ? { resume: opts.sessionId } : {}),
+      abortController,
     },
   });
 
@@ -70,7 +79,13 @@ export async function askClaude(prompt: string, opts: ClaudeOptions): Promise<Cl
         `原始错误: ${msg}`,
       );
     }
+    // If error is due to abort (timeout), rethrow with clearer message
+    if (err instanceof Error && err.name === 'AbortError' || msg.includes('abort') || msg.includes('timeout')) {
+      throw new Error(`Claude Code 请求超时或已中止: ${msg}`);
+    }
     throw err;
+  } finally {
+    clearTimeout(timeoutId);
   }
 
   const text = texts.join("\n").trim() || "(Claude 没有返回文本内容)";

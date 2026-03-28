@@ -28,6 +28,7 @@
 | [07 — OpenClaw 源码分析](07-openclaw-analysis.md) | 33个源文件深度解析、时序图、架构图、协议类型体系、CDN加密方案 |
 | [08 — 权限模式](08-permission-modes.md) | auto 模式详解、6 种模式对比、安全策略 |
 | [09 — Agent SDK 深度科普](09-agent-sdk-deep-dive.md) | SDK 架构、query() 消息流、resume 多轮对话、Hooks/MCP 扩展、迁移指南 |
+| [10 — 原项目 vs 当前项目：精简设计与教学价值](10-comparison-analysis.md) | 从3756行生产代码到550行教学应用的逆向工程与重构分析 |
 
 ## 技术栈
 

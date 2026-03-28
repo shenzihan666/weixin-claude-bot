@@ -52,11 +52,21 @@ function printConfig() {
   console.log(`工作目录 (--cwd):               ${config.cwd}`);
   console.log(`系统提示 (--system-prompt):     ${config.systemPrompt || "(无)"}`);
   console.log(`多轮对话 (--multi-turn):        ${config.multiTurn ? "开启" : "关闭"}`);
-  console.log(`\n可用模型: ${KNOWN_MODELS.join(", ")}`);
-  console.log("\n模型别名（Claude Code 子进程解析）:");
+  console.log(`使用本地Claude配置 (--use-local-claude-config): ${config.useLocalClaudeConfig ? "开启" : "关闭"}`);
+  console.log(`超时时间 (--timeout):           ${config.timeoutMs}ms (${config.timeoutMs / 1000}秒)`);
+  console.log(`\n已知完整模型ID: ${KNOWN_MODELS.join(", ")}`);
+  console.log("\n常用模型别名（Claude Code 子进程解析，可传递任意支持的模型或别名）:");
   for (const { alias, desc } of MODEL_ALIASES) {
     console.log(`  ${alias.padEnd(14)} ${desc}`);
   }
+  console.log("\n⚠️ 重要: 可使用任意模型名称（如第三方模型）");
+  console.log("   如需使用第三方模型提供商（如 DeepSeek），有两种方式:");
+  console.log("   1. 设置环境变量:");
+  console.log("      export ANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic");
+  console.log("      export ANTHROPIC_MODEL=DeepSeek-V3.2");
+  console.log("   2. 或在本地 Claude 配置文件 (~/.claude/config.json) 中设置:");
+  console.log("      {\"ANTHROPIC_BASE_URL\": \"https://api.deepseek.com/anthropic\", \"ANTHROPIC_MODEL\": \"DeepSeek-V3.2\"}");
+  console.log("   然后在配置中设置模型为: --model DeepSeek-V3.2");
   console.log("\n权限模式:");
   for (const { mode, desc } of PERMISSION_MODES) {
     const marker = mode === config.permissionMode ? " ◄ 当前" : "";
@@ -123,6 +133,26 @@ function main() {
           process.exit(1);
         }
         updates.multiTurn = next === "true";
+        i++;
+        hasChanges = true;
+        break;
+      case "--use-local-claude-config":
+        if (!next || (next !== "true" && next !== "false")) {
+          console.error("--use-local-claude-config 需要参数 (true/false)");
+          process.exit(1);
+        }
+        updates.useLocalClaudeConfig = next === "true";
+        i++;
+        hasChanges = true;
+        break;
+      case "--timeout":
+        if (!next) { console.error("--timeout 需要参数 (毫秒)"); process.exit(1); }
+        const timeout = parseInt(next, 10);
+        if (isNaN(timeout) || timeout <= 0) {
+          console.error("--timeout 必须是正整数 (毫秒)");
+          process.exit(1);
+        }
+        updates.timeoutMs = timeout;
         i++;
         hasChanges = true;
         break;
