@@ -40,6 +40,8 @@ nvm install 18
 npm install -g @anthropic-ai/claude-agent-sdk
 claude  # 首次运行会引导登录 Anthropic 账号
 ```
+### 推荐使用 cc switch 配置供应商
+https://github.com/farion1231/cc-switch
 
 ## 安装
 
