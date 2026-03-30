@@ -157,6 +157,8 @@ export type BotConfig = {
   useLocalClaudeConfig?: boolean;
   /** Timeout in milliseconds for Claude Code responses (default: 300000 = 5 minutes) */
   timeoutMs?: number;
+  /** Reconnect interval in milliseconds to prevent connection stale (default: 60000 = 1 minute) */
+  reconnectIntervalMs?: number;
 };
 
 const DEFAULT_CONFIG: Required<BotConfig> = {
@@ -168,6 +170,7 @@ const DEFAULT_CONFIG: Required<BotConfig> = {
   multiTurn: false,
   useLocalClaudeConfig: true, // 默认使用本地Claude配置
   timeoutMs: 300_000, // 5 minutes
+  reconnectIntervalMs: 60_000, // 1 minute
 };
 
 function configPath(): string {

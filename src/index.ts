@@ -37,6 +37,31 @@ const SESSION_EXPIRED_ERRCODE = -14;
 const SESSION_PAUSE_MS = 60 * 60 * 1000; // 1 hour
 const RESET_COMMANDS = new Set(["新对话", "/reset", "/clear"]);
 
+// --- Connection Manager (force periodic reconnect to prevent stale connections) --
+
+class ConnectionManager {
+  private lastConnectTime: number = Date.now();
+  private reconnectCount = 0;
+
+  constructor(private intervalMs: number) {}
+
+  /** Check if we should force a reconnect based on elapsed time */
+  shouldReconnect(): boolean {
+    return Date.now() - this.lastConnectTime >= this.intervalMs;
+  }
+
+  /** Record a successful connection */
+  recordConnect(): void {
+    this.lastConnectTime = Date.now();
+    this.reconnectCount++;
+  }
+
+  /** Get reconnect count */
+  getReconnectCount(): number {
+    return this.reconnectCount;
+  }
+}
+
 // --- Message text extraction ---
 
 function extractText(msg: WeixinMessage): string {
@@ -227,6 +252,7 @@ async function main() {
   console.log(`工作目录: ${config.cwd}`);
   console.log(`多轮对话: ${config.multiTurn ? "开启" : "关闭"}`);
   console.log(`使用本地Claude配置: ${config.useLocalClaudeConfig ? "开启" : "关闭"}`);
+  console.log(`重连间隔: ${config.reconnectIntervalMs / 1000}秒`);
   if (config.systemPrompt) console.log(`系统提示: ${config.systemPrompt.substring(0, 60)}...`);
   console.log("等待消息中...\n");
 
@@ -234,6 +260,9 @@ async function main() {
   loadContextTokens();
   loadSessionIds();
   let syncBuf = loadSyncBuf();
+
+  // Connection manager for forced reconnects
+  const connectionManager = new ConnectionManager(config.reconnectIntervalMs);
 
   // Graceful shutdown
   process.on("SIGINT", () => {
@@ -245,6 +274,14 @@ async function main() {
   let consecutiveFailures = 0;
 
   while (true) {
+    // Check if we need to force reconnect
+    if (connectionManager.shouldReconnect()) {
+      console.log("🔄 强制重新建立连接...");
+      connectionManager.recordConnect();
+      // Brief pause to let previous connection fully close
+      await sleep(500);
+    }
+
     try {
       const resp = await getUpdates(api, { get_updates_buf: syncBuf });
 

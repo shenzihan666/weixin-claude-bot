@@ -54,6 +54,7 @@ function printConfig() {
   console.log(`多轮对话 (--multi-turn):        ${config.multiTurn ? "开启" : "关闭"}`);
   console.log(`使用本地Claude配置 (--use-local-claude-config): ${config.useLocalClaudeConfig ? "开启" : "关闭"}`);
   console.log(`超时时间 (--timeout):           ${config.timeoutMs}ms (${config.timeoutMs / 1000}秒)`);
+  console.log(`重连间隔 (--reconnect-interval): ${config.reconnectIntervalMs}ms (${config.reconnectIntervalMs / 1000}秒)`);
   console.log(`\n已知完整模型ID: ${KNOWN_MODELS.join(", ")}`);
   console.log("\n常用模型别名（Claude Code 子进程解析，可传递任意支持的模型或别名）:");
   for (const { alias, desc } of MODEL_ALIASES) {
@@ -153,6 +154,17 @@ function main() {
           process.exit(1);
         }
         updates.timeoutMs = timeout;
+        i++;
+        hasChanges = true;
+        break;
+      case "--reconnect-interval":
+        if (!next) { console.error("--reconnect-interval 需要参数 (毫秒)"); process.exit(1); }
+        const reconnectInterval = parseInt(next, 10);
+        if (isNaN(reconnectInterval) || reconnectInterval <= 0) {
+          console.error("--reconnect-interval 必须是正整数 (毫秒)");
+          process.exit(1);
+        }
+        updates.reconnectIntervalMs = reconnectInterval;
         i++;
         hasChanges = true;
         break;
